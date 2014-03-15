@@ -1,0 +1,523 @@
+<?xml version="1.0"?>
+<!--
+
+Copyright (C) 2014 Guido Berhoerster <guido+rantaiwarna@berhoerster.name>
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+-->
+<refentry xmlns="http://docbook.org/ns/docbook" xml:lang="en">
+  <info>
+    <author>
+      <personname>
+        <firstname>Guido</firstname>
+        <surname>Berhoerster</surname>
+      </personname>
+      <email>guido+rantaiwarna@berhoerster.name</email>
+      <personblurb/>
+    </author>
+    <date>12 March, 2014</date>
+  </info>
+  <refmeta>
+    <refentrytitle>rantaiwarna</refentrytitle>
+    <manvolnum>6</manvolnum>
+    <refmiscinfo class="source"/>
+    <refmiscinfo class="version"/>
+    <refmiscinfo class="manual">User Commands</refmiscinfo>
+  </refmeta>
+  <refnamediv>
+    <refname>rantaiwarna</refname>
+    <refpurpose>tile-matching puzzle game</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>rantaiwarna</command>
+      <arg choice="opt">
+        <option>-c</option>
+        <replaceable>colors</replaceable>
+      </arg>
+      <arg choice="opt">
+        <option>-w</option>
+        <replaceable>width</replaceable>
+      </arg>
+      <arg choice="opt">
+        <option>-h</option>
+        <replaceable>height</replaceable>
+      </arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Description</title>
+    <para><command>rantaiwarna</command> is a tile-matching puzzle game which
+      is also known under the names <quote>Chain Shot!</quote> or
+      <quote>SameGame</quote>. It is played on a rectangular board which is
+      initially filled with elements of several different colors. Two or more
+      adjacent elements of the same color may be eliminated, the score
+      resulting from the elimination of elements depends on the number of
+      elements eliminated at once. The goal of the game is to eliminate as many
+      elements as possible until there are no more adjacent elements of the
+      same color left or the board is completely cleared.  Vertical gaps
+      resulting from the elimination of elements are filled by sliding down
+      elements from above the gap, column gaps are filled by sliding columns on
+      the right side of the column gap to the left.</para>
+  </refsect1>
+  <refsect1>
+    <title>Options</title>
+    <para>The following options are supported:</para>
+    <variablelist>
+      <varlistentry>
+        <term>
+          <option>-c</option>
+          <replaceable>color</replaceable>
+        </term>
+        <listitem>
+          <para>Use the specified number of colors, at least two and at most
+          five.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>-w</option>
+          <replaceable>width</replaceable>
+        </term>
+        <listitem>
+          <para>Create a board with the given width, at least five
+            elements.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>-h</option>
+          <replaceable>height</replaceable>
+        </term>
+        <listitem>
+          <para>Create a board with the given height, at least five
+            elements.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Usage</title>
+    <para><command>rantaiwarna</command> makes use of the <citerefentry>
+      <refentrytitle>curses</refentrytitle><manvolnum>3</manvolnum>
+      </citerefentry> library and determines the terminal's capabilities using
+      its <citerefentry><refentrytitle>terminfo</refentrytitle>
+      <manvolnum>5</manvolnum></citerefentry> entry. Certain keyboard and mouse
+      commands may not be available depending on the terminal and the variant of
+      the <citerefentry><refentrytitle>curses</refentrytitle>
+      <manvolnum>3</manvolnum></citerefentry> library
+      <command>rantaiwarna</command> was built against.</para>
+    <refsect2>
+      <title>Game Screen Commands</title>
+      <variablelist>
+        <varlistentry>
+          <term>
+            <keycap function="up"/>,
+            <keycap function="right"/>,
+            <keycap function="down"/>,
+            <keycap function="left"/>
+          </term>
+          <listitem>
+            <para>move the cursor around</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>h</keycap>,
+            <keycap>j</keycap>,
+            <keycap>k</keycap>,
+            <keycap>l</keycap>
+          </term>
+          <listitem>
+            <para>same as arrow keys</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap function="space"/>
+          </term>
+          <listitem>
+            <para>eliminate elements under the cursor</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap function="enter"/>
+          </term>
+          <listitem>
+            <para>same as <keycap function="space"/></para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <mousebutton>Left mouse button</mousebutton>
+          </term>
+          <listitem>
+            <para>same as <keycap function="space"/></para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycombo action="simul">
+              <keycap function="control"/>
+              <keycap>l</keycap>
+            </keycombo>
+          </term>
+          <listitem>
+            <para>refresh the screen</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>H</keycap>
+          </term>
+          <listitem>
+            <para>switch to the help screen</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>i</keycap>
+          </term>
+          <listitem>
+            <para>switch to the highscore screen</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>n</keycap>
+          </term>
+          <listitem>
+            <para>start a new game</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>q</keycap>
+          </term>
+          <listitem>
+            <para>quit the game</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>Highscore Screen Commands</title>
+      <variablelist>
+        <varlistentry>
+          <term>
+            <keycap function="up"/>,
+            <keycap function="right"/>,
+            <keycap function="down"/>,
+            <keycap function="left"/>
+          </term>
+          <listitem>
+            <para>scroll on line up or down or one character to the left or
+              right</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>h</keycap>,
+            <keycap>j</keycap>,
+            <keycap>k</keycap>,
+            <keycap>l</keycap>
+          </term>
+          <listitem>
+            <para>same as arrow keys</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap function="space"/>
+          </term>
+          <listitem>
+            <para>scroll down one line</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap function="enter"/>
+          </term>
+          <listitem>
+            <para>same as <keycap function="space"/></para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap function="pageup"/>,
+            <keycap function="pagedown"/>
+          </term>
+          <listitem>
+            <para>scroll up or down one screenful</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>b</keycap>,
+            <keycap>f</keycap>
+          </term>
+          <listitem>
+            <para>same as <keycap function="pageup"/> or
+              <keycap function="pagedown"/></para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycombo action="simul">
+              <keycap function="control"/>
+              <keycap>b</keycap>
+            </keycombo>,
+            <keycombo action="simul">
+              <keycap function="control"/>
+              <keycap>f</keycap>
+            </keycombo>
+          </term>
+          <listitem>
+            <para>same as <keycap function="pageup"/> or
+              <keycap function="pagedown"/></para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap function="home"/>,
+            <keycap function="end"/>
+          </term>
+          <listitem>
+            <para>go to the first or last line</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>g</keycap>,
+            <keycap>G</keycap>,
+          </term>
+          <listitem>
+            <para>same as <keycap function="home"/> or
+              <keycap function="end"/></para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycombo action="simul">
+              <keycap function="control"/>
+              <keycap>l</keycap>
+            </keycombo>
+          </term>
+          <listitem>
+            <para>refresh the screen</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>a</keycap>
+          </term>
+          <listitem>
+            <para>switch to the game screen</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>H</keycap>
+          </term>
+          <listitem>
+            <para>switch to the help screen</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>q</keycap>
+          </term>
+          <listitem>
+            <para>quit the game</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>Help Screen Commands</title>
+      <variablelist>
+        <varlistentry>
+          <term>
+            <keycap function="up"/>,
+            <keycap function="right"/>,
+            <keycap function="down"/>,
+            <keycap function="left"/>
+          </term>
+          <listitem>
+            <para>scroll on line up or down or one character to the left or
+              right</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>h</keycap>,
+            <keycap>j</keycap>,
+            <keycap>k</keycap>,
+            <keycap>l</keycap>
+          </term>
+          <listitem>
+            <para>same as arrow keys</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap function="space"/>
+          </term>
+          <listitem>
+            <para>scroll down one line</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap function="enter"/>
+          </term>
+          <listitem>
+            <para>same as <keycap function="space"/></para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap function="pageup"/>,
+            <keycap function="pagedown"/>
+          </term>
+          <listitem>
+            <para>scroll up or down one screenful</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>b</keycap>,
+            <keycap>f</keycap>
+          </term>
+          <listitem>
+            <para>same as <keycap function="pageup"/> or
+              <keycap function="pagedown"/></para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycombo action="simul">
+              <keycap function="control"/>
+              <keycap>b</keycap>
+            </keycombo>,
+            <keycombo action="simul">
+              <keycap function="control"/>
+              <keycap>f</keycap>
+            </keycombo>
+          </term>
+          <listitem>
+            <para>same as <keycap function="pageup"/> or
+              <keycap function="pagedown"/></para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap function="home"/>,
+            <keycap function="end"/>
+          </term>
+          <listitem>
+            <para>go to the first or last line</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>g</keycap>,
+            <keycap>G</keycap>,
+          </term>
+          <listitem>
+            <para>same as <keycap function="home"/> or
+              <keycap function="end"/></para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycombo action="simul">
+              <keycap function="control"/>
+              <keycap>l</keycap>
+            </keycombo>
+          </term>
+          <listitem>
+            <para>refresh the screen</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>a</keycap>
+          </term>
+          <listitem>
+            <para>switch to the game screen</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>i</keycap>
+          </term>
+          <listitem>
+            <para>switch to the highscore screen</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <keycap>q</keycap>
+          </term>
+          <listitem>
+            <para>quit the game</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </refsect2>
+  </refsect1>
+  <refsect1>
+    <title>Files</title>
+    <variablelist>
+      <varlistentry>
+        <term>
+          <filename>$HOME/.rantaiwarna_hiscore</filename>
+        </term>
+        <listitem>
+          <para>personal highscore file</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Exit Status</title>
+    <para>The following exit values are returned:</para>
+    <variablelist>
+      <varlistentry>
+        <term>0</term>
+        <listitem>
+          <para>Command successfully executed.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>&gt; 0</term>
+        <listitem>
+          <para>An error has occured.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Files</title>
+  </refsect1>
+</refentry>

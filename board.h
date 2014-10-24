@@ -38,7 +38,7 @@ struct board_ctx {
 	int		width;
 	short		colors;
 	int32_t		score;
-	bool		status;
+	int		status;
 };
 
 struct board_ctx * board_create(int, int, short);

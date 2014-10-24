@@ -110,14 +110,14 @@ board_generate(struct board_ctx *board)
 			    (short)(rantaiwarna_rand(&board->seed) %
 			    board->colors) + 1;
 		}
-		if (board_check_status(board) & GAME_OVER) {
-			return (ERR);
+		if (!(board_check_status(board) & GAME_OVER)) {
+			break;
 		}
 	}
 
 	board->score = 0;
 
-	return (OK);
+	return (!(board->status & GAME_OVER) ? OK : ERR);
 }
 
 int

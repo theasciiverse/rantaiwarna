@@ -1,0 +1,14 @@
+News
+====
+
+rantaiwarna 2 (2014-10-24T17:12:12+02:00)
+-----------------------------------------
+
+- Fix the logic checking whether a generated board is playable
+- Fix status type
+- Remove erroneously added markup
+
+rantaiwarna 1 (2014-03-15T18:41:03+01:00)
+-----------------------------------------
+
+- Initial revision

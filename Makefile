@@ -111,6 +111,7 @@ clobber: clean
 
 dist: clobber
 	$(PAX) -w -x ustar -s ',.*/\..*,,' -s ',./[^/]*\.tar\.gz,,' \
-	    -s ',\./,$(DISTNAME)/,' . | $(GZIP) > $(DISTNAME).tar.gz
+	    -s ',^\.$$,,' -s ',\./,$(DISTNAME)/,' . | \
+	    $(GZIP) > $(DISTNAME).tar.gz
 
 -include $(patsubst %.o,%.d,$(OBJS))

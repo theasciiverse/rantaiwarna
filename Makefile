@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 Guido Berhoerster <guido+rantaiwarna@berhoerster.name>
+# Copyright (C) 2016 Guido Berhoerster <guido+rantaiwarna@berhoerster.name>
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -25,6 +25,8 @@ PACKAGE =	rantaiwarna
 VERSION =	2
 DISTNAME :=	$(PACKAGE)-$(VERSION)
 
+# gcc, clang, icc, Sun/Solaris Studio
+CC :=		$(CC) -std=c99
 COMPILE.c =	$(CC) $(CFLAGS) $(XCFLAGS) $(CPPFLAGS) $(XCPPFLAGS) $(TARGET_ARCH) -c
 # gcc, clang, icc
 MAKEDEPEND.c =	$(CC) -MM $(CFLAGS) $(XCFLAGS) $(CPPFLAGS) $(XCPPFLAGS)
@@ -41,7 +43,7 @@ PAX :=		pax
 GZIP :=		gzip
 SED :=		sed
 XSLTPROC :=	xsltproc
-DOCBOOK5_MANPAGES_STYLESHEET =	http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl
+DOCBOOK5_MANPAGES_STYLESHEET = http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl
 
 define generate-manpage-rule =
 %.$(1): %.$(1).xml
@@ -64,6 +66,9 @@ bindir ?=	$(prefix)/bin
 datadir ?=	$(prefix)/share
 mandir ?=	$(datadir)/man
 
+OS_NAME :=	$(shell uname -s)
+OS_RELEASE :=	$(shell uname -r)
+
 OBJS =		rantaiwarna.o board.o highscore.o util.o
 MANPAGES =	$(PACKAGE).6
 DOCBOOK5_MANPAGES_FLAGS =	--stringparam man.authors.section.enabled 0 \
@@ -75,18 +80,17 @@ DOCBOOK5_MANPAGES_FLAGS =	--stringparam man.authors.section.enabled 0 \
 
 all: $(PACKAGE) $(MANPAGES)
 
-$(PACKAGE): XCPPFLAGS :=
-# Illumos/Solaris
-#$(PACKAGE): XCPPFLAGS := -I/usr/xpg4/include
-$(PACKAGE): XCFLAGS :=
-$(PACKAGE): LDLIBS :=	-lcurses -lm
-# Linux, FreeBSD, OpenBSD
-#$(PACKAGE): LDLIBS :=	-lncursesw -ltinfo -lm
-# Illumos/Solaris, UnixWare, NetBSD
-#$(PACKAGE): LDLIBS :=	-lcurses -lm
-$(PACKAGE): XLDFLAGS :=
-# Illumos/Solaris
-#$(PACKAGE): XLDFLAGS := -L/usr/xpg4/lib -R/usr/xpg4/lib
+$(PACKAGE): XCPPFLAGS =	-D_XOPEN_SOURCE=600
+$(PACKAGE): LDLIBS =	-lm
+ifeq ($(OS_NAME),SunOS)
+  $(PACKAGE): XCPPFLAGS += -I/usr/xpg4/include
+  $(PACKAGE): XLDFLAGS += -L/usr/xpg4/lib -R/usr/xpg4/lib
+  $(PACKAGE): LDLIBS +=	-lcurses
+else ifneq ($(findstring $(OS_NAME),UnixWare NetBSD),)
+  $(PACKAGE): LDLIBS +=	-lcurses
+else
+  $(PACKAGE): LDLIBS +=	-lncursesw -ltinfo
+endif
 $(PACKAGE): $(OBJS)
 	$(LINK.o) $^ $(LDLIBS) -o $@
 

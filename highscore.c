@@ -368,7 +368,7 @@ highscore_save(struct highscore_entry *highscore, int16_t ref_height,
 	for (entry = highscore; entry != NULL; entry = entry->next) {
 		if (strftime(timestr, sizeof (timestr), "%Y-%m-%d",
 		    &entry->time) == 0) {
-			snprintf(timestr, sizeof (timestr) - 1, "1970-01-01");
+			snprintf(timestr, sizeof (timestr), "1970-01-01");
 		}
 		n = snprintf(NULL, 0, "%" PRId16 " %" PRId16 " %" PRId16 " %"
 		    PRId32 " %s\n", entry->width, entry->height, entry->colors,

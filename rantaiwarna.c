@@ -1226,10 +1226,13 @@ main(int argc, char *argv[])
 		goto out;
 	}
 
-	if (all_windows_create(ctx) == ERR) {
-		goto out;
+	/*
+	 * a terminal too small for the board shows a message and waits for a
+	 * resize (or q) in main_loop(), as it does after a resize
+	 */
+	if (all_windows_create(ctx) == OK) {
+		rantaiwarna_doupdate(ctx);
 	}
-	rantaiwarna_doupdate(ctx);
 
 	if (main_loop(ctx) == OK) {
 		status = EXIT_SUCCESS;

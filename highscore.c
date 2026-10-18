@@ -34,8 +34,80 @@
 #include "compat.h"
 #include "util.h"
 
-#define	HIGHSCORE_FILENAME	".rantaiwarna_hiscore"
-#define	HIGHSCORE_TMP_TMPL	".rantaiwarna_hiscoreXXXXXX"
+#define	HIGHSCORE_DIRNAME	"rantaiwarna"
+#define	HIGHSCORE_FILENAME	"hiscore"
+#define	HIGHSCORE_TMP_TMPL	"hiscoreXXXXXX"
+#define	LEGACY_FILENAME		".rantaiwarna_hiscore"
+
+/*
+ * Builds dir + "/" + name in newly allocated memory.
+ */
+static char *
+path_join(const char *dir, const char *name)
+{
+	int	n;
+	char	*path;
+
+	n = snprintf(NULL, 0, "%s/%s", dir, name);
+	if (n < 0) {
+		rantaiwarna_err(1, NULL);
+	}
+	path = rantaiwarna_malloc((size_t)n + 1);
+	if (snprintf(path, (size_t)n + 1, "%s/%s", dir, name) != n) {
+		rantaiwarna_err(1, NULL);
+	}
+
+	return (path);
+}
+
+/*
+ * The folder holding the highscore file, $XDG_DATA_HOME/rantaiwarna or
+ * ~/.local/share/rantaiwarna, created with any missing parents, and the
+ * file the game used before, ~/.rantaiwarna_hiscore, which is read while
+ * the new file does not exist yet.  Returns ERR when there is no home
+ * folder.
+ */
+static int
+highscore_dirs(char **dirp, char **legacyp)
+{
+	char		*home_dir;
+	char		*xdg_dir;
+	struct passwd	*pw;
+	char		*dir;
+	char		*p;
+
+	home_dir = getenv("HOME");
+	if ((home_dir == NULL) || (home_dir[0] == '\0')) {
+		pw = getpwuid(getuid());
+		if (pw == NULL) {
+			return (ERR);
+		}
+		home_dir = pw->pw_dir;
+	}
+
+	/* an empty or relative XDG_DATA_HOME counts as unset (XDG spec) */
+	xdg_dir = getenv("XDG_DATA_HOME");
+	if ((xdg_dir != NULL) && (xdg_dir[0] == '/')) {
+		dir = path_join(xdg_dir, HIGHSCORE_DIRNAME);
+	} else {
+		p = path_join(home_dir, ".local/share");
+		dir = path_join(p, HIGHSCORE_DIRNAME);
+		free(p);
+	}
+	for (p = dir + 1; *p != '\0'; p++) {
+		if (*p == '/') {
+			*p = '\0';
+			mkdir(dir, 0755);
+			*p = '/';
+		}
+	}
+	mkdir(dir, 0755);
+
+	*dirp = dir;
+	*legacyp = path_join(home_dir, LEGACY_FILENAME);
+
+	return (OK);
+}
 
 static struct highscore_entry *
 highscore_entry_new(int16_t width, int16_t height, int16_t colors,
@@ -120,8 +192,8 @@ highscore_load(struct highscore_entry **highscorep, int16_t ref_height,
 {
 	int		error = ERR;
 	struct highscore_entry *highscore = NULL;
-	char		*home_dir;
-	struct passwd	*pw;
+	char		*highscore_dir = NULL;
+	char		*legacy_filename = NULL;
 	int		n;
 	char		*highscore_filename = NULL;
 	FILE		*fp = NULL;
@@ -134,25 +206,10 @@ highscore_load(struct highscore_entry **highscorep, int16_t ref_height,
 	struct tm	tm;
 	time_t		time;
 
-	home_dir = getenv("HOME");
-	if (home_dir == NULL) {
-		pw = getpwuid(getuid());
-		if (pw != NULL) {
-			home_dir = pw->pw_dir;
-		} else {
-			goto out;
-		}
+	if (highscore_dirs(&highscore_dir, &legacy_filename) == ERR) {
+		goto out;
 	}
-
-	n = snprintf(NULL, 0, "%s/%s", home_dir, HIGHSCORE_FILENAME);
-	if (n < 0) {
-		rantaiwarna_err(1, NULL);
-	}
-	highscore_filename = rantaiwarna_malloc((size_t)n + 1);
-	if (snprintf(highscore_filename, (size_t)n + 1,
-	    "%s/%s", home_dir, HIGHSCORE_FILENAME) != n) {
-		rantaiwarna_err(1, NULL);
-	}
+	highscore_filename = path_join(highscore_dir, HIGHSCORE_FILENAME);
 
 	n = snprintf(NULL, 0, "%%" SCNd16 "%%" SCNd16 "%%" SCNd16 "%%" SCNd32
 	    "%%%lus", sizeof (timestr) - 1);
@@ -166,6 +223,9 @@ highscore_load(struct highscore_entry **highscorep, int16_t ref_height,
 	}
 
 	fp = fopen(highscore_filename, "r");
+	if (fp == NULL) {
+		fp = fopen(legacy_filename, "r");
+	}
 	if (fp == NULL) {
 		goto out;
 	}
@@ -198,6 +258,8 @@ out:
 
 	free(scan_fmt);
 	free(highscore_filename);
+	free(highscore_dir);
+	free(legacy_filename);
 
 	if (error == ERR) {
 		highscore_free(highscore);
@@ -215,14 +277,15 @@ highscore_save(struct highscore_entry *highscore, int16_t ref_height,
 {
 	int		error = ERR;
 	char		*scan_fmt = NULL;
-	char		*home_dir;
-	struct passwd	*pw;
+	char		*highscore_dir = NULL;
+	char		*legacy_filename = NULL;
 	int		n;
 	char		*highscore_filename = NULL;
 	char		*tmp_filename = NULL;
 	mode_t		old_mode;
 	FILE		*fp_in = NULL;
 	int		fd_out = -1;
+	int		fd_sync = -1;
 	FILE		*fp_out = NULL;
 	int16_t		width;
 	int16_t		height;
@@ -258,35 +321,11 @@ highscore_save(struct highscore_entry *highscore, int16_t ref_height,
 		rantaiwarna_err(1, NULL);
 	}
 
-	home_dir = getenv("HOME");
-	if (home_dir == NULL) {
-		pw = getpwuid(getuid());
-		if (pw != NULL) {
-			home_dir = pw->pw_dir;
-		} else {
-			goto out;
-		}
+	if (highscore_dirs(&highscore_dir, &legacy_filename) == ERR) {
+		goto out;
 	}
-
-	n = snprintf(NULL, 0, "%s/%s", home_dir, HIGHSCORE_FILENAME);
-	if (n < 0) {
-		rantaiwarna_err(1, NULL);
-	}
-	highscore_filename = rantaiwarna_malloc((size_t)n + 1);
-	if (snprintf(highscore_filename, (size_t)n + 1, "%s/%s", home_dir,
-	    HIGHSCORE_FILENAME) != n) {
-		rantaiwarna_err(1, NULL);
-	}
-
-	n = snprintf(NULL, 0, "%s/%s", home_dir, HIGHSCORE_TMP_TMPL);
-	if (n < 0) {
-		rantaiwarna_err(1, NULL);
-	}
-	tmp_filename = rantaiwarna_malloc((size_t)n + 1);
-	if (snprintf(tmp_filename, (size_t)n + 1, "%s/%s", home_dir,
-	    HIGHSCORE_TMP_TMPL) != n) {
-		rantaiwarna_err(1, NULL);
-	}
+	highscore_filename = path_join(highscore_dir, HIGHSCORE_FILENAME);
+	tmp_filename = path_join(highscore_dir, HIGHSCORE_TMP_TMPL);
 
 	old_mode = umask(077);
 	fd_out = mkstemp(tmp_filename);
@@ -299,11 +338,16 @@ highscore_save(struct highscore_entry *highscore, int16_t ref_height,
 	if (fp_out == NULL) {
 		goto out;
 	}
+	fd_sync = fd_out;
+	fd_out = -1;	/* closed by fclose(fp_out) from here on */
 	/*
 	 * preserve entries which do not match the current combination of width,
 	 * height, and colors
 	 */
 	fp_in = fopen(highscore_filename, "r");
+	if (fp_in == NULL) {
+		fp_in = fopen(legacy_filename, "r");
+	}
 	if (fp_in != NULL) {
 		while ((n = fscanf(fp_in, scan_fmt, &width, &height, &colors,
 		    &score, timestr)) != EOF) {
@@ -341,7 +385,7 @@ highscore_save(struct highscore_entry *highscore, int16_t ref_height,
 	if (fflush(fp_out) == EOF) {
 		goto out;
 	}
-	if (fsync(fd_out) == -1) {
+	if (fsync(fd_sync) == -1) {
 		goto out;
 	}
 
@@ -373,6 +417,8 @@ out:
 	free(highscore_filename);
 	free(tmp_filename);
 	free(scan_fmt);
+	free(highscore_dir);
+	free(legacy_filename);
 
 	return (error);
 }

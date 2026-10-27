@@ -90,3 +90,9 @@ shrinks back to the message, q quits with status 0; at 44x15 the whole
 game fits. ASan and UBSan: three 40-second runs of random keys and
 mouse clicks with random resizes, and runs at `-w 5 -h 5 -c 2` and
 `-w 300 -h 200 -c 5`, no reports. macOS: not built here.
+
+## Ours
+
+- **How to play it, at the top of README.** A short note on installing and
+  starting it with av, or from a release archive; the original text follows
+  unchanged.
